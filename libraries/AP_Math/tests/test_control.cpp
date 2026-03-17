@@ -469,6 +469,28 @@ TEST(Control, test_control)
     EXPECT_FLOAT_EQ(velxy.y, 0.0);
 }
 
+TEST(KinematicLimit, zero_max_xy_limit)
+{
+    // These values are arbitrary, they do not affect the result.
+    // (If you can select any values here which cause the test to fail, that indicates we have a problem.)
+    constexpr float arbitrary_seg_len_z = 1.11f;
+    constexpr float arbitrary_max_z_neg = 2.22f;
+    constexpr float arbitrary_max_z_pos = 3.33f;
+
+    constexpr float zero_max_xy = 0.0f;
+    constexpr float expected_limit = 0.0f;
+    // A totally-vertical segment is still constrained by max_xy==0.
+    // Thus we test both a vertical (seg_xy==0) & non-vertical (seg_xy!=0) case.
+    for (const auto seg_len_xy : {0.0f, 4.44f}) {
+        float observed_limit = kinematic_limit(seg_len_xy,
+                                               arbitrary_seg_len_z,
+                                               zero_max_xy,
+                                               arbitrary_max_z_neg,
+                                               arbitrary_max_z_pos);
+        EXPECT_FLOAT_EQ(observed_limit, expected_limit);
+    }
+}
+
 // catch floating point exceptions
 sigjmp_buf avert_your_eyes_children;
 static void _tc_sig_fpe(int signum)

@@ -704,9 +704,11 @@ float kinematic_limit(Vector3f direction, float max_xy, float max_z_neg, float m
 // compute the maximum allowed magnitude along a direction defined by segment_length_xy and segment_length_z components
 // constrained by independent horizontal (max_xy) and vertical (max_z_pos/max_z_neg) limits
 // returns the maximum achievable magnitude without exceeding any axis limit
+//
+// note: even if the segment has no length in a dir (e.g. vertical), that dir's limit may still impact the result
 float kinematic_limit(float segment_length_xy, float segment_length_z, float max_xy, float max_z_neg, float max_z_pos)
 {
-    // Reject zero-length direction vectors or undefined limits
+    // Regardless of segment direction, if any maximum is zero, the kinematic limit is also zero.
     if (is_zero(max_xy) || is_zero(max_z_pos) || is_zero(max_z_neg)) {
         return 0.0;
     }
