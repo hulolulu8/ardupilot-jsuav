@@ -491,6 +491,8 @@ TEST(KinematicLimit, zero_max_xy_limit)
     }
 }
 
+// TODO PR #32470 (@hunt0r): Add similar tests as the one above for max_z_pos & max_z_neg.
+
 // catch floating point exceptions
 sigjmp_buf avert_your_eyes_children;
 static void _tc_sig_fpe(int signum)
