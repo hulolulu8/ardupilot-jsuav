@@ -101,11 +101,11 @@ void AP_OpticalFlow_MAV::update(void)
 void AP_OpticalFlow_MAV::handle_msg(const mavlink_message_t &msg)
 {
     switch (msg.msgid) {
-    #if defined(AP_MAVLINK_MSG_OPTICAL_FLOW_RAD_ENABLED) && AP_MAVLINK_MSG_OPTICAL_FLOW_RAD_ENABLED
+    #if AP_MAVLINK_MSG_OPTICAL_FLOW_RAD_ENABLED
     case MAVLINK_MSG_ID_OPTICAL_FLOW_RAD:
         handle_msg_optical_flow_rad(msg);
         break;
-    #endif
+#endif // AP_MAVLINK_MSG_OPTICAL_FLOW_RAD_ENABLED
 
     case MAVLINK_MSG_ID_OPTICAL_FLOW: {
         // Handle the standard (older) message
@@ -122,24 +122,19 @@ void AP_OpticalFlow_MAV::handle_msg(const mavlink_message_t &msg)
     }
     }
 }
-#if defined(AP_MAVLINK_MSG_OPTICAL_FLOW_RAD_ENABLED) && AP_MAVLINK_MSG_OPTICAL_FLOW_RAD_ENABLED
+#if AP_MAVLINK_MSG_OPTICAL_FLOW_RAD_ENABLED
 void AP_OpticalFlow_MAV::handle_msg_optical_flow_rad(const mavlink_message_t &msg)
 {
-    // Correctly decode the RADIAL message
     mavlink_optical_flow_rad_t packet;
     mavlink_msg_optical_flow_rad_decode(&msg, &packet);
 
-    struct AP_OpticalFlow::OpticalFlow_state state {};
-    // device_id and timestamp_us removed per review feedback to save flash
-    state.surface_quality = packet.quality;
-
-    // Use the integrated radian values from the packet
-    state.flowRate = {packet.integrated_x, packet.integrated_y};
-    state.bodyRate = {packet.integrated_xgyro, packet.integrated_ygyro};
-
+    const struct AP_OpticalFlow::OpticalFlow_state state {
+        packet.quality,
+        {packet.integrated_x, packet.integrated_y},
+        {packet.integrated_xgyro, packet.integrated_ygyro},
+    }; 
     // Pass to the frontend handler
     _update_frontend(state);
 }
 #endif // AP_MAVLINK_MSG_OPTICAL_FLOW_RAD_ENABLED
-
 #endif // AP_OPTICALFLOW_MAV_ENABLED

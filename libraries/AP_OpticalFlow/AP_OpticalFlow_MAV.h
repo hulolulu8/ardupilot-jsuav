@@ -24,9 +24,11 @@ public:
     static AP_OpticalFlow_MAV *detect(AP_OpticalFlow &_frontend);
 
 private:
+#if AP_MAVLINK_MSG_OPTICAL_FLOW_RAD_ENABLED
     // handle OPTICAL_FLOW_RAD message
     void handle_msg_optical_flow_rad(const mavlink_message_t &msg);
-
+#endif
+    
     uint64_t prev_frame_us;     // system time of previous message
     uint64_t latest_frame_us;   // system time of latest message
     Vector2f flow_sum;          // sum of optical flow sensor values since last update
@@ -37,5 +39,6 @@ private:
     Vector2f gyro_sum;          // sum of gyro sensor values since last update
     uint16_t gyro_sum_count;    // number of gyro sensor values in gyro_sum
 };
+
 
 #endif // AP_OPTICALFLOW_MAV_ENABLED
