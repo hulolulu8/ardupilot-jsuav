@@ -136,6 +136,7 @@ void AP_Mount_MAVLink::handle_gimbal_device_information(const mavlink_message_t 
     const uint8_t fw_ver_revision = (info.firmware_version & 0x00FF0000) >> 16;
     const uint8_t fw_ver_build = (info.firmware_version & 0xFF000000) >> 24;
 
+    _firmware_version = info.firmware_version;
     strncpy(vendor_name, info.vendor_name, ARRAY_SIZE(vendor_name));
     strncpy(model_name, info.model_name, ARRAY_SIZE(model_name));
 
