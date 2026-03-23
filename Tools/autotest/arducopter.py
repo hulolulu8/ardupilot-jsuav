@@ -6907,6 +6907,12 @@ class AutoTestCopter(vehicle_test_suite.TestSuite):
             "RC6_OPTION": 213,      # MOUNT1_PITCH
         })
         self.customise_SITL_commandline(["--serial5=sim:avt_cm62_gimbal:"])
+        # firmware_version = major=1 | (minor=2)<<8 | (patch=3)<<16 = 0x030201
+        self.mount_check_camera_information(
+            "AVTA", "SIM_AVTA",
+            expected_fw_version=0x030201,
+        )
+        self.mount_test_body()
 
     def MountAVTCM62Dual(self):
         '''test two simultaneous MAVLink (Gimbal Protocol v2) gimbals using
@@ -6923,6 +6929,18 @@ class AutoTestCopter(vehicle_test_suite.TestSuite):
             "--serial5=sim:avt_cm62_gimbal:",
             "--serial6=sim:avt_cm62_gimbal:",
         ])
+        # first simulator → slot 0 → MAV_COMP_ID_GIMBAL → gimbal_device_id=1
+        self.mount_check_camera_information(
+            "AVTA", "SIM_AVTA",
+            expected_fw_version=0x030201,
+            expected_gimbal_device_id=1,
+        )
+        # second simulator → slot 1 → MAV_COMP_ID_GIMBAL2 → gimbal_device_id=2
+        self.mount_check_camera_information(
+            "AVTA", "SIM_AVTA",
+            expected_fw_version=0x030201,
+            expected_gimbal_device_id=2,
+        )
 
     def assert_mount_rpy(self, r, p, y, tolerance=1):
         '''assert mount atttiude in degrees'''
