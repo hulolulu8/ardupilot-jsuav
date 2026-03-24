@@ -25,10 +25,10 @@ bool AP_RangeFinder_Benewake_TFA1500::process_byte(uint8_t received_byte, uint32
     }
 
     if (tf_frame.packet.header == TFA1500_FRAME_HEADER) {
-        const uint8_t expected_crc = (uint8_t)~(tf_frame.packet.dist_low +
+        const uint8_t expected_checksum = (uint8_t)~(tf_frame.packet.dist_low +
                                                 tf_frame.packet.dist_mid +
                                                 tf_frame.packet.dist_high);
-        if (expected_crc == tf_frame.packet.crc_sum_of_bytes) {
+        if (expected_checksum == tf_frame.packet.checksum_of_bytes) {
             dist_cm = (tf_frame.packet.dist_high << 16) |
                       (tf_frame.packet.dist_mid << 8) |
                       tf_frame.packet.dist_low;
@@ -92,8 +92,7 @@ bool AP_RangeFinder_Benewake_TFA1500::get_reading(float &reading_m)
     if (count > 0) {
         reading_m = (sum_cm * 0.01f) / count;
         return true;
-    }
-
+    } 
     if (count_out_of_range > 0) {
         reading_m = MAX(model_dist_max_cm() * 0.01f, max_distance());
         return true;
