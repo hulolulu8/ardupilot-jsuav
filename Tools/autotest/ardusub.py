@@ -16,6 +16,7 @@ from pymavlink import mavutil
 
 import vehicle_test_suite
 
+from vehicle_test_suite import AutoTestTimeoutException
 from vehicle_test_suite import NotAchievedException
 
 # get location of scripts
@@ -671,6 +672,79 @@ class AutoTestSub(vehicle_test_suite.TestSuite):
         self.wait_waypoint(1, 4, max_dist=5)
         self.wait_statustext("Gripper Released", timeout=60)
         self.wait_waypoint(1, 6, max_dist=5)
+        self.disarm_vehicle()
+
+    def MANUAL_CONTROL(self):
+        '''Test mavlink MANUAL_CONTROL'''
+        self.set_parameters({
+            "MAV_GCS_SYSID": self.mav.source_system,
+            "RC12_OPTION": 46, # enable/disable rc overrides
+        })
+
+        self.change_mode("MANUAL")
+        self.wait_ready_to_arm()
+        self.arm_vehicle()
+        self.progress("start moving forward")
+        normal_rc_vertical = 1900
+        self.set_rc(Joystick.Forward, normal_rc_vertical)
+
+        self.progress("allow overrides")
+        self.set_rc(12, 2000)
+
+        want_pitch = 0.003
+        want_speed = 2.0
+        tstart = self.get_sim_time_cached()
+        while True:
+            if self.get_sim_time_cached() - tstart > 10:
+                raise AutoTestTimeoutException("Did not reach speed and/or pitch")
+            self.mav.mav.manual_control_send(
+                1, # target system
+                0, # x pitch
+                0, # y roll
+                0, # z vertical
+                0, # r yaw
+                500, # forward
+                32767, # lateral
+                0) # button mask
+
+            m = self.assert_receive_message('VFR_HUD')
+            n = self.assert_receive_message('ATTITUDE')
+            self.progress("Speed=%f want=<%f pitch=%f want_pitch=>%f" %
+                          (m.groundspeed, want_speed, n.pitch, want_pitch))
+            if m.groundspeed < want_speed and n.pitch > want_pitch:
+                break
+
+        self.progress("now override to stop - but set the switch on the RC transmitter to deny overrides; this should send the speed back up")  # noqa
+        self.set_rc(12, 1000)
+
+        tstart = self.get_sim_time_cached()
+        while True:
+            if self.get_sim_time_cached() - tstart > 10:
+                raise AutoTestTimeoutException("Override did not stop")
+            self.mav.mav.manual_control_send(
+                1, # target system
+                0, # x pitch
+                0, # y roll
+                0, # z vertical
+                0, # r yaw
+                500, # forward
+                32767, # lateral
+                0) # button mask
+
+            m = self.assert_receive_message('VFR_HUD')
+            n = self.assert_receive_message('ATTITUDE')
+            self.progress("Speed=%f want=>%f pitch=%f want_pitch=<%f" %
+                          (m.groundspeed, want_speed, n.pitch, want_pitch))
+            if m.groundspeed > want_speed and n.pitch < want_pitch:
+                break
+
+        # re-enable RC overrides
+        self.set_rc(12, 2000)
+
+        # check we revert to normal RC inputs when gcs overrides cease:
+        self.progress("Waiting for RC to revert to normal RC input")
+        self.wait_rc_channel_value(5, normal_rc_vertical, timeout=10)
+
         self.disarm_vehicle()
 
     def SET_POSITION_TARGET_GLOBAL_INT(self):
@@ -1369,6 +1443,7 @@ class AutoTestSub(vehicle_test_suite.TestSuite):
             self.MAV_mgs,
             self.DiveMission,
             self.GripperMission,
+            self.MANUAL_CONTROL,
             self.DoubleCircle,
             self.MotorThrustHoverParameterIgnore,
             self.SET_POSITION_TARGET_GLOBAL_INT,
