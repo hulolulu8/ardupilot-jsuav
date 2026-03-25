@@ -560,11 +560,12 @@ class WaitAndMaintain(object):
 
 
 class WaitAndMaintainLocation(WaitAndMaintain):
-    def __init__(self, test_suite, target, accuracy=5, height_accuracy=1, **kwargs):
+    def __init__(self, test_suite, target, accuracy=5, height_accuracy=1, location_source=None, **kwargs):
         super(WaitAndMaintainLocation, self).__init__(test_suite, **kwargs)
         self.target = target
         self.height_accuracy = height_accuracy
         self.accuracy = accuracy
+        self.location_source = location_source
 
     def announce_start_text(self):
         t = self.target
@@ -578,7 +579,7 @@ class WaitAndMaintainLocation(WaitAndMaintain):
         return self.loc
 
     def get_current_value(self):
-        return self.test_suite.mav.location()
+        return self.test_suite.get_mav_location(self.location_source)
 
     def horizontal_error(self, value):
         return self.test_suite.get_distance(value, self.target)
@@ -7991,7 +7992,10 @@ class TestSuite(abc.ABC):
             lat = m.lat * 1e-7
             lon = m.lon * 1e-7
             alt_m = m.alt * 0.001
-
+        elif m_type == "SIMSTATE":
+            lat = m.lat * 1e-7
+            lon = m.lng * 1e-7
+            alt_m = 0 # not available in SIMSTATE
         if lat == 0 and lon == 0:
             raise ValueError(f"Bad lat/lng {lat=} {lon=}")
 
