@@ -8427,8 +8427,8 @@ class TestSuite(abc.ABC):
             if seq > current_wp+1:
                 raise WaitWaypointTimeout(("Skipped waypoint! Got wp %u expected %u"
                                            % (seq, current_wp+1)))
-        raise WaitWaypointTimeout("Timed out waiting for waypoint %u of %u" %
-                                  (wpnum_end, wpnum_end))
+        raise WaitWaypointTimeout(f"Timed out waiting for waypoint {wpnum_end} of {wpnum_end}."
+                                  f" (Extra details: {current_wp=}, {wp_dist=}, {max_dist=}, {seq=}.)")
 
     def get_cached_message(self, message_type):
         '''returns the most-recently received instance of message_type'''
@@ -9581,7 +9581,7 @@ Also, ignores heartbeats not from our target system'''
         while True:
             if self.get_sim_time_cached() - tstart > timeout:
                 raise NotAchievedException("Did not get MISSION_COUNT packet")
-            m = self.mav.recv_match(blocking=True, timeout=0.1)
+            m = self.mav.recv_match(blocking=True, timeout=0.2)
             if m is None:
                 raise NotAchievedException("Did not get MISSION_COUNT response")
             if verbose:

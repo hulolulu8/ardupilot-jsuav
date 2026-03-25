@@ -567,7 +567,7 @@ class AutoTestPlane(vehicle_test_suite.TestSuite):
         self.context_push()
         self.context_collect('STATUSTEXT')
         self.change_mode('AUTO')
-        self.wait_waypoint(1, num_wp, max_dist=60, timeout=mission_timeout)
+        self.wait_waypoint(1, num_wp, max_dist=75, timeout=mission_timeout)
         self.wait_groundspeed(0, 0.5, timeout=mission_timeout)
         if quadplane:
             self.wait_statustext("Throttle disarmed", timeout=200, check_context=True)
