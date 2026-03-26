@@ -5,11 +5,15 @@
 ## Testing (more checks increases chance of being merged)
 
 - [ ] Checked by a human programmer
-- [ ] Tested in SITL
+- [ ] Unit tests verify these changes (and they pass in CI)
+- [ ] Autotests verify these changes (and they pass in CI)
+- [ ] Tested in SITL manually (description below)
+  - [ ] Logs attached
+  - [ ] Logs available on request
 - [ ] Tested on hardware
-- [ ] Logs attached
-- [ ] Logs available on request
-- [ ] Autotest included
+  - [ ] Logs attached
+  - [ ] Logs available on request
+- [ ] Tested manually (description below)
 
 ## Description
 
