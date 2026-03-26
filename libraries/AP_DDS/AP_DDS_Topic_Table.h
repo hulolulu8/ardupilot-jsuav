@@ -79,7 +79,6 @@ static inline constexpr uint8_t to_underlying(const TopicIndex index)
     return static_cast<uint8_t>(index);
 }
 
-
 constexpr struct AP_DDS_Client::Topic_table AP_DDS_Client::topics[] = {
 #if AP_DDS_TIME_PUB_ENABLED
     {

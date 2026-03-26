@@ -60,7 +60,6 @@ private:
     static AP_ExternalControl *singleton;
 };
 
-
 namespace AP
 {
 AP_ExternalControl *externalcontrol();

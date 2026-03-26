@@ -13,7 +13,6 @@
 
 const AP_HAL::HAL &hal = AP_HAL::get_HAL();
 
-
 TEST(AP_GSOF, incomplete_packet)
 {
     AP_GSOF gsof;
@@ -41,7 +40,7 @@ TEST(AP_GSOF, packet1)
         c = fgetc (fp);
         parsed |= gsof.parse((uint8_t)c, expected);
     }
-    
+
     EXPECT_TRUE(parsed);
 
     fclose(fp);
