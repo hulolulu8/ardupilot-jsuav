@@ -2,6 +2,14 @@
 
 <!-- Put a one or two line summary of what your PR does here -->
 
+## Classification (check one of these)
+
+- [ ] No code changes (only comments / variable names / etc)
+- [ ] Only changes infrastructure (e.g. unit tests, helper scripts)
+- [ ] Changes compiled code, but NOT user-facing behavior (e.g. a refactor to reduce flash size)
+- [ ] Changes user-facing behavior
+- [ ] (None of the above options correctly describe this PR)
+
 ## Testing (more checks increases chance of being merged)
 
 - [ ] Checked by a human programmer
