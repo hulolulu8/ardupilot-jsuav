@@ -4,10 +4,13 @@
 
 ## Classification (check one of these)
 
-- [ ] No code changes (only comments / variable names / etc)
-- [ ] Only changes infrastructure (e.g. unit tests, helper scripts)
-- [ ] Changes compiled code, but NOT user-facing behavior (e.g. a refactor to reduce flash size)
-- [ ] Changes user-facing behavior
+- [ ] No changes to code
+  (e.g. only changes comments / variable names)
+- [ ] Only changes infrastructure
+  (e.g. unit tests, helper scripts)
+- [ ] Changes on-vehicle code but preserves behavior
+  (e.g. a refactor that impacts flash size)
+- [ ] Changes on-vehicle behavior
 - [ ] (None of the above options correctly describe this PR)
 
 ## Testing (more checks increase the chance of being merged)
