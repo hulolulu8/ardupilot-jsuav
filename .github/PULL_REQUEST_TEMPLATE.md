@@ -10,7 +10,7 @@
 - [ ] Changes user-facing behavior
 - [ ] (None of the above options correctly describe this PR)
 
-## Testing (more checks increases chance of being merged)
+## Testing (more checks increase the chance of being merged)
 
 - [ ] Checked by a human programmer
 - [ ] Unit tests verify these changes (and they pass in CI)
