@@ -4044,12 +4044,14 @@ function fence:get_margin_breach_time() end
 ---| 8 # Minimum altitude
 function fence:get_breaches() end
 
--- Returns minimum safe altitude in meters above home alt frame (i.e. alt_min + margin)
----@return number 
+-- Returns minimum safe altitude in meters and its altitude frame (i.e. alt_min + margin)
+---@return number altitude_m
+---@return integer frame -- 0:Above sea level, 1:Above Home, 2:Above Origin, 3:Above Terrain
 function fence:get_safe_alt_min() end
 
--- Returns maximum safe altitude in meters above home alt frame (i.e. alt_max - margin)
----@return number 
+-- Returns maximum safe altitude in meters and its altitude frame (i.e. alt_max - margin)
+---@return number altitude_m
+---@return integer frame -- 0:Above sea level, 1:Above Home, 2:Above Origin, 3:Above Terrain
 function fence:get_safe_alt_max() end
 
 -- Returns configured fences
@@ -4222,56 +4224,105 @@ servo_telem = {}
 
 -- get servo telem for the given servo number
 ---@param servo_index integer -- 0 indexed servo number
----@return AP_Servo_Telem_Data_ud|nil
+---@return ServoTelemetryData_ud|nil
 function servo_telem:get_telem(servo_index) end
 
+-- update telemetry data for an servo instance
+---@param instance integer -- servo instance, 0 indexed
+---@param telemdata ServoTelemetryData_ud -- Data to update
+function servo_telem:update_telem_data(instance, telemdata) end
+
 -- Servo telemetry userdata object
----@class AP_Servo_Telem_Data_ud
-local AP_Servo_Telem_Data_ud = {}
+---@class ServoTelemetryData_ud
+local ServoTelemetryData_ud = {}
+
+-- Create new instance of ServoTelemetryData userdata object
+---@return ServoTelemetryData_ud
+function ServoTelemetryData() end
 
 -- Get timestamp of last telem update
 ---@return uint32_t_ud -- milliseconds since boot
-function AP_Servo_Telem_Data_ud:last_update_ms() end
+function ServoTelemetryData_ud:last_update_ms() end
 
 -- Get type spesfic status flags
 ---@return integer|nil -- flags or nil if not available
-function AP_Servo_Telem_Data_ud:status_flags() end
+function ServoTelemetryData_ud:status_flags() end
+
+-- Set type spesfic status flags
+---@param value integer
+function ServoTelemetryData_ud:status_flags(value) end
 
 -- Get pcb temperature in centidegrees
 ---@return integer|nil -- temperature in centidegrees or nil if not available
-function AP_Servo_Telem_Data_ud:pcb_temperature_cdeg() end
+function ServoTelemetryData_ud:pcb_temperature_cdeg() end
+
+-- Set pcb temperature in centidegrees
+---@param value integer -- temperature in centidegrees
+function ServoTelemetryData_ud:pcb_temperature_cdeg(value) end
 
 -- Get motor temperature in centidegrees
 ---@return integer|nil -- temperature in centidegrees or nil if not available
-function AP_Servo_Telem_Data_ud:motor_temperature_cdeg() end
+function ServoTelemetryData_ud:motor_temperature_cdeg() end
+
+-- Set motor temperature in centidegrees
+---@param value integer -- temperature in centidegrees
+function ServoTelemetryData_ud:motor_temperature_cdeg(value) end
 
 -- Get duty cycle
 ---@return integer|nil -- duty cycle 0% to 100% or nil if not available
-function AP_Servo_Telem_Data_ud:duty_cycle() end
+function ServoTelemetryData_ud:duty_cycle() end
+
+-- Set duty cycle
+---@param value integer -- duty cycle 0% to 100%
+function ServoTelemetryData_ud:duty_cycle(value) end
 
 -- get current
 ---@return number|nil -- current in amps or nil if not available
-function AP_Servo_Telem_Data_ud:current() end
+function ServoTelemetryData_ud:current() end
+
+-- Set current
+---@param value number -- current in amps
+function ServoTelemetryData_ud:current(value) end
 
 -- get voltage
 ---@return number|nil -- voltage in volts or nil if not available
-function AP_Servo_Telem_Data_ud:voltage() end
+function ServoTelemetryData_ud:voltage() end
+
+-- Set voltage
+---@param value number -- voltage in volts
+function ServoTelemetryData_ud:voltage(value) end
 
 -- get speed
 ---@return number|nil -- speed in degrees per second or nil if not available
-function AP_Servo_Telem_Data_ud:speed() end
+function ServoTelemetryData_ud:speed() end
+
+-- Set speed
+---@param value number -- speed in degrees per second
+function ServoTelemetryData_ud:speed(value) end
 
 -- get force
 ---@return number|nil -- force in newton meters or nil if not available
-function AP_Servo_Telem_Data_ud:force() end
+function ServoTelemetryData_ud:force() end
+
+-- Set force
+---@param value number -- force in newton meters
+function ServoTelemetryData_ud:force(value) end
 
 -- get measured position
 ---@return number|nil -- measured position in degrees or nil if not available
-function AP_Servo_Telem_Data_ud:measured_position() end
+function ServoTelemetryData_ud:measured_position() end
+
+-- Set measured position
+---@param value number -- measured position in degrees
+function ServoTelemetryData_ud:measured_position(value) end
 
 -- get commanded position
 ---@return number|nil -- comanded position in degrees or nil if not available
-function AP_Servo_Telem_Data_ud:command_position() end
+function ServoTelemetryData_ud:command_position() end
+
+-- Set commanded position
+---@param value number -- comanded position in degrees
+function ServoTelemetryData_ud:command_position(value) end
 
 -- simulator specific bindings
 sim = {}

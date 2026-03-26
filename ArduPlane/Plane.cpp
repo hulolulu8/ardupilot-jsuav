@@ -280,6 +280,14 @@ void Plane::update_logging10(void)
         camera_mount.write_log();
     }
 #endif
+#if AP_RANGEFINDER_ENABLED
+    if (should_log(MASK_LOG_NTUN)) {
+        if (rangefinder.has_orientation(rangefinder_orientation()) &&
+            (g.rangefinder_landing.get() > 0)) {
+            Log_Write_RFNS();
+        }
+    }
+#endif
 }
 
 /*
@@ -873,7 +881,7 @@ bool Plane::get_wp_crosstrack_error_m(float &xtrack_error) const
         return true;
     }
 #endif
-    xtrack_error = nav_controller->crosstrack_error();
+    xtrack_error = nav_controller->crosstrack_error_m();
     return true;
 }
 
@@ -882,7 +890,7 @@ bool Plane::get_wp_crosstrack_error_m(float &xtrack_error) const
 bool Plane::set_target_location(const Location &target_loc)
 {
     Location loc{target_loc};
-    fix_terrain_WP(loc, __LINE__);
+    fix_terrain_WP(loc, __AP_LINE__);
 
     if (plane.control_mode != &plane.mode_guided) {
         // only accept position updates when in GUIDED mode
@@ -938,7 +946,7 @@ bool Plane::update_target_location(const Location &old_loc, const Location &new_
     }
     next_WP_loc = new_loc;
 
-    fix_terrain_WP(next_WP_loc, __LINE__);
+    fix_terrain_WP(next_WP_loc, __AP_LINE__);
 
 #if HAL_QUADPLANE_ENABLED
     if (control_mode == &mode_qland || control_mode == &mode_qloiter) {
@@ -950,11 +958,11 @@ bool Plane::update_target_location(const Location &old_loc, const Location &new_
 }
 
 // allow for velocity matching in VTOL
-bool Plane::set_velocity_match(const Vector2f &velocity)
+bool Plane::set_velocity_match(const Vector2f &velocity_ne_ms)
 {
 #if HAL_QUADPLANE_ENABLED
     if (quadplane.in_vtol_mode() || quadplane.in_vtol_land_sequence()) {
-        quadplane.poscontrol.velocity_match_ms = velocity;
+        quadplane.poscontrol.velocity_match_ms = velocity_ne_ms;
         quadplane.poscontrol.last_velocity_match_ms = AP_HAL::millis();
         return true;
     }
@@ -963,12 +971,12 @@ bool Plane::set_velocity_match(const Vector2f &velocity)
 }
 
 // allow for override of land descent rate
-bool Plane::set_land_descent_rate(float descent_rate)
+bool Plane::set_land_descent_rate(float descent_rate_ms)
 {
 #if HAL_QUADPLANE_ENABLED
     if (quadplane.in_vtol_land_descent() ||
         control_mode == &mode_qland) {
-        quadplane.poscontrol.override_descent_rate_ms = descent_rate;
+        quadplane.poscontrol.override_descent_rate_ms = descent_rate_ms;
         quadplane.poscontrol.last_override_descent_ms = AP_HAL::millis();
         return true;
     }

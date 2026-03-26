@@ -243,6 +243,7 @@ protected:
         RATE      = 1,
         RETRACTED = 2,
         NEUTRAL   = 3,
+        LOCATION  = 4,
     };
 
     // class for a single angle or rate target
@@ -306,6 +307,7 @@ protected:
     virtual void send_target_rates(const MountRateTarget &rate_rads) { }
     virtual void send_target_retracted() { }
     virtual void send_target_neutral() { }
+    virtual void send_target_location(const Location &roi_loc) { }
 
     // options parameter bitmask handling
     enum class Options : uint8_t {
@@ -393,12 +395,14 @@ protected:
         MountRateTarget rate_rads;  // rate target in rad/s
         uint32_t last_rate_request_ms;
         uint32_t poi_start_ms;  // time we started trying to find the gimbal POI for an AuxFunc::MOUNT_POI_LOCK
+        bool pointing_at_poi_at_home_alt;
     } mnt_target;
     
     // RP earth frame locks accessible by backend
     bool _pitch_lock = true;              // pitch_lock used in RC_TARGETING mode. True if the gimbal's tilt target is maintained in earth-frame, if false (aka "follow") it is maintained in body-frame
     bool _roll_lock = true;               // roll_lock used in RC_TARGETING mode. True if the gimbal's roll target is maintained in earth-frame, if false (aka "follow") it is maintained in body-frame
-    
+
+    bool clear_roi_pending;     // True if there is a pending clear ROI request
 
 private:
 
@@ -412,6 +416,7 @@ private:
 #if AP_MOUNT_POI_TO_LATLONALT_ENABLED
     // calculate the Location that the gimbal is pointing at
     void calculate_poi();
+    bool calculate_poi_at_home_alt(Location &target_location);
 #endif
 
     bool _yaw_lock;                 // yaw_lock used in RC_TARGETING mode. True if the gimbal's yaw target is maintained in earth-frame, if false (aka "follow") it is maintained in body-frame

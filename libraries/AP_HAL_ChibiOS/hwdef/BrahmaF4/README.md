@@ -24,28 +24,26 @@
 
 The UARTs are marked Rx and Tx in the above pinouts.
 
-========== ========== ======== ====================
- Name      Pad        Port       Default Protocol
-========== ========== =======  ====================
- SERIAL 0  DM/DP      USB       Mavlink
- SERIAL 1  RX1/TX1    USART 1   RCin (DMA)
- SERIAL 2  RX3/TX3    USART 3   ESC
- SERIAL 3  RX6/TX6    USART 6   GPS1 (DMA)
- SERIAL 4  RX4/TX4    USART 4   MSP DisplayPort
-========== ========== =======  ====================
+| Name | Pad | Port | Default Protocol |
+| --- | --- | --- | --- |
+| SERIAL 0 | DM/DP | USB | Mavlink |
+| SERIAL 1 | RX1/TX1 | USART 1 | RCin (DMA) |
+| SERIAL 2 | RX3/TX3 | USART 3 | ESC |
+| SERIAL 3 | RX6/TX6 | USART 6 | GPS1 (DMA) |
+| SERIAL 4 | RX4/TX4 | USART 4 | MSP DisplayPort |
 
-* USART1 and USART6 supports RX and TX DMA.
-* UART2 and UART4 do not support DMA.
-* ESC Telemetry need to be manually configured based upon esc.
+- USART1 and USART6 supports RX and TX DMA.
+- UART2 and UART4 do not support DMA.
+- ESC Telemetry need to be manually configured based upon esc.
 
 ## RC Input
 
  RC input is configured by default on the R1 and T1 (UART1) pads (CRSF or ELRS).
  SBUS pad is inverted and applied to R1
 
-* FPort requires connection to T1 and :ref:`SERIAL1_OPTIONS<SERIAL1_OPTIONS>` be set to “7”.
-* CRSF also requires a T1 connection, in addition to R1, and automatically provides telemetry. Set :ref:`SERIAL1_OPTIONS<SERIAL1_OPTIONS>` to “0”.
-* SRXL2 requires a connection to T1 and automatically provides telemetry. Set :ref:`SERIAL1_OPTIONS<SERIAL1_OPTIONS>` to “4”.
+- FPort requires connection to T1 and :ref:`SERIAL1_OPTIONS<SERIAL1_OPTIONS>` be set to "7".
+- CRSF also requires a T1 connection, in addition to R1, and automatically provides telemetry. Set :ref:`SERIAL1_OPTIONS<SERIAL1_OPTIONS>` to "0".
+- SRXL2 requires a connection to T1 and automatically provides telemetry. Set :ref:`SERIAL1_OPTIONS<SERIAL1_OPTIONS>` to "4".
 
 Any UART can be used for RC system connections in ArduPilot also, and is compatible with all protocols except PPM. See Radio Control Systems for details.
 
@@ -88,10 +86,9 @@ The default battery configuration is:
 
  The autopilot does not have a built-in compass, however you can attach an external compass using I2C on the SDA and SCL pads.
 
-## Firmware¶
+## Loading Firmware
 
-Firmware for this board can be found `here <https://firmware.ardupilot.org`__  in sub-folders labeled “BrahmaF4”.
-Loading Firmware¶
+Firmware for this board can be found [here](https://firmware.ardupilot.org) in sub-folders labeled “BrahmaF4”.
 
 Initial firmware load can be done with DFU by plugging in USB with the bootloader button pressed. Then you should load the “with_bl.hex” firmware, using your favourite DFU loading tool.
 

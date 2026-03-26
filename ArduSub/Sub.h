@@ -146,7 +146,7 @@ private:
 #if AP_SUB_RC_ENABLED  
     // flight modes convenience array
     AP_Int8 *flight_modes;
-    const uint8_t num_flight_modes = 6;
+    static constexpr uint8_t num_flight_modes = 6;
 #endif
 
     AP_LeakDetector leak_detector;
@@ -460,7 +460,6 @@ private:
     float get_alt_msl() const WARN_IF_UNUSED;
     void exit_mission();
     void set_origin(const Location& loc);
-    bool ensure_ekf_origin();
     bool verify_loiter_unlimited();
     bool verify_loiter_time();
     bool verify_wait_delay();

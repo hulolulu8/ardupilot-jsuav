@@ -175,7 +175,7 @@ void ModeAuto::run()
 }
 
 // return true if a position estimate is required
-bool ModeAuto::requires_GPS() const
+bool ModeAuto::requires_position() const
 {
     // position estimate is required in all sub modes except attitude control
     return _mode != SubMode::NAV_ATTITUDE_TIME;
@@ -1486,10 +1486,10 @@ void PayloadPlace::run()
         break;
     case State::Ascent:
     case State::Done:
-        float vel = 0.0;
+        float vel_d_zero = 0.0;
         copter.flightmode->land_run_horizontal_control();
         float pos_d_m = -descent_start_altitude_m;
-        pos_control->input_pos_vel_accel_D_m(pos_d_m, vel, 0.0);
+        pos_control->input_pos_vel_accel_D_m(pos_d_m, vel_d_zero, 0.0);
         break;
     }
     pos_control->D_update_controller();

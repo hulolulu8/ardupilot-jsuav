@@ -69,7 +69,7 @@ The ACNS-F405AIO has one built-in compass LIS3MDLTR, you can also attach an exte
 
 ## Loading Firmware
 
-Firmware for these boards can be found at https://firmware.ardupilot.org in sub-folders labeled “ACNS-F405AIO”.
+Firmware for these boards can be found at the [ArduPilot firmware server](https://firmware.ardupilot.org) in sub-folders labeled “ACNS-F405AIO”.
 
 Initial firmware load can be done with DFU by plugging in USB with the
 boot button pressed. Then you should load the "xxx_bl.hex"
@@ -77,8 +77,8 @@ firmware, using your favorite DFU loading tool.
 
 Subsequently, you can update the firmware with Mission Planner.
 
-## Pinout<div align=center>
+## Pinout
 
-<img width="500" src=F405AIO_top.jpg/>
+![F405AIO Top](F405AIO_top.jpg)
 
-<img width="500" src=F405AIO_bottom.jpg/>
+![F405AIO Bottom](F405AIO_bottom.jpg)
