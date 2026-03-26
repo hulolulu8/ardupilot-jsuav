@@ -1,6 +1,6 @@
 ## Summary
 
-<!-- a one or two line summary of what your PR does here -->
+<!-- Put a one or two line summary of what your PR does here -->
 
 ## Testing (more checks increases chance of being merged)
 
@@ -13,7 +13,7 @@
 
 ## Description
 
-<!-- Describe your changes here -->
+<!-- Describe your changes and how you tested them here -->
 
 <!--
 Don't overlook our community's expectations for creating a PR:
