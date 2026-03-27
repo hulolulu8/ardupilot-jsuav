@@ -76,4 +76,6 @@ protected:
     // current limiting
     float _output_limited = 1.0f;
     float _batt_current_last = 0.0f;
+
+    AP_Float _thrust_asymmetry;
 };

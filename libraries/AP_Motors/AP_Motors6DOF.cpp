@@ -118,6 +118,14 @@ const AP_Param::GroupInfo AP_Motors6DOF::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("12_DIRECTION", 13, AP_Motors6DOF, _motor_reverse[11], 1),
 
+    // @Param: ASYMMETRY
+    // @DisplayName: Motor thrust asymmetry
+    // @Description: Ratio of reverse to forward thrust for each motor. 1.0 means equal thrust in both directions. Values below 1.0 indicate weaker reverse thrust (e.g. 0.8 means reverse produces 80% of forward thrust).
+    // @Range: 0.5 2.0
+    // @Increment: 0.05
+    // @User: Standard
+    AP_GROUPINFO("ASYMMETRY", 14, AP_Motors6DOF, _thrust_asymmetry, 1.0f),
+
     AP_GROUPEND
 };
 
@@ -229,6 +237,9 @@ void AP_Motors6DOF::output_min()
 
 int16_t AP_Motors6DOF::calc_thrust_to_pwm(float thrust_in) const
 {
+    if (is_negative(thrust_in) && is_positive(_thrust_asymmetry.get()) && !is_equal(_thrust_asymmetry.get(), 1.0f)) {
+        thrust_in = constrain_float(thrust_in / sqrtf(_thrust_asymmetry.get()), -1.0f, 1.0f);
+    }
     int16_t range_up = get_pwm_output_max() - 1500;
     int16_t range_down = 1500 - get_pwm_output_min();
     return 1500 + thrust_in * (thrust_in > 0 ? range_up : range_down);
