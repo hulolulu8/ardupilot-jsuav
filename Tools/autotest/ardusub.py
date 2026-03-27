@@ -1290,6 +1290,50 @@ class AutoTestSub(vehicle_test_suite.TestSuite):
             elif m.chan == 2:
                 chan2_last_timestamp_us = att_ts_us
 
+    def UnevenThrustDepth(self):
+        """Test that asymmetry compensation maintains depth during roll with uneven thrust"""
+        self.wait_ready_to_arm()
+        self.arm_vehicle()
+        self.change_mode('STABILIZE')
+        self.set_parameter("SIM_BUOYANCY", 0)
+
+        # dive to 5m with symmetric thrust and stabilize
+        self.set_rc(Joystick.Throttle, 1300)
+        self.wait_altitude(altitude_min=-6, altitude_max=-5, relative=False, timeout=60)
+        self.set_rc(Joystick.Throttle, 1500)
+        self.wait_climbrate(-0.02, 0.02, timeout=10)
+
+        # introduce thrust asymmetry without compensation
+        self.set_parameter("SIM_THRUST_ASYM", 0.8)
+        self.set_parameter("MOT_ASYMMETRY", 1.0)
+
+        # verify that roll causes depth change without compensation
+        alt_before = self.assert_receive_message('VFR_HUD').alt
+        self.set_rc(Joystick.Roll, 1700)
+        self.delay_sim_time(5)
+        self.set_rc(Joystick.Roll, 1500)
+        alt_after = self.assert_receive_message('VFR_HUD').alt
+        alt_delta = abs(alt_after - alt_before)
+        self.progress("Uncompensated altitude change: %.2f m" % alt_delta)
+        if alt_delta < 0.1:
+            raise NotAchievedException(
+                "Expected altitude change without compensation, got only %.2f m" % alt_delta)
+
+        # now enable compensation and let the sub settle
+        self.set_parameter("MOT_ASYMMETRY", 0.8)
+        self.set_rc(Joystick.Throttle, 1500)
+        self.wait_climbrate(-0.02, 0.02, timeout=10)
+
+        # apply roll — compensation should keep depth stable
+        self.set_rc(Joystick.Roll, 1700)
+        self.delay_sim_time(5)
+        self.set_rc(Joystick.Roll, 1500)
+
+        # verify compensation kept depth stable
+        self.watch_altitude_maintained(delta=0.1)
+
+        self.disarm_vehicle()
+
     def SurfaceSensorless(self):
         """Test surface mode with sensorless thrust"""
         # set GCS failsafe to SURFACE
@@ -1389,6 +1433,7 @@ class AutoTestSub(vehicle_test_suite.TestSuite):
             self.PosHoldBounceBack,
             self.SHT3X,
             self.SurfaceSensorless,
+            self.UnevenThrustDepth,
             self.GPSForYaw,
             self.WaterDepth,
             self.VisoForYaw,
