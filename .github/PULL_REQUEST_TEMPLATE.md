@@ -2,16 +2,14 @@
 
 <!-- Put a one or two line summary of what your PR does here -->
 
-## Classification (check one of these)
+## Classification (check all that apply)
 
-- [ ] No changes to code
-  (e.g. only changes comments / variable names)
-- [ ] Only changes infrastructure
-  (e.g. unit tests, helper scripts)
-- [ ] Changes on-vehicle code but preserves behavior
-  (e.g. a refactor that impacts flash size)
-- [ ] Changes on-vehicle behavior
-- [ ] (None of the above options correctly describe this PR)
+- [ ] Changes infrastructure
+   (e.g. unit tests, helper scripts)
+- [ ] Changes autopilot binary
+   (e.g. not just comment / variable name changes)
+- [ ] Changes autopilot behaviour
+   (e.g. not just a refactor to improve flash size)
 
 ## Testing (more checks increase the chance of being merged)
 
