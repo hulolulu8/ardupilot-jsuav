@@ -228,10 +228,78 @@ const AP_Param::GroupInfo AP_MotorsHeli_RSC::var_info[] = {
 };
 
 // init_servo - servo initialization on start-up
-void AP_MotorsHeli_RSC::init_servo()
+void AP_MotorsHeli_RSC::initialize()
 {
     // setup RSC on specified channel by default
     SRV_Channels::set_aux_channel_default(_aux_fn, _default_channel);
+
+    // configure RSC on initialization
+    configure();
+
+}
+
+// configure - configure the RSC.
+void AP_MotorsHeli_RSC::configure()
+{
+
+    set_control_mode(static_cast<RotorControlMode>(_rsc_mode.get()));
+    set_ramp_time(_ramp_time.get());
+    set_runup_time(_runup_time.get());
+    set_critical_speed(_critical_speed.get());
+    set_idle_output(_idle_output.get());
+
+    configure_armed();
+}
+
+// configure - configure the RSC with specific settings, allows caller to specify settings instead of using parameters.
+void AP_MotorsHeli_RSC::configure(RotorControlMode control_mode, int8_t ramp_time, int8_t runup_time, float critical_speed, float idle_output)
+{
+    set_control_mode(control_mode);
+    set_ramp_time(ramp_time);
+    set_runup_time(runup_time);
+    set_critical_speed(critical_speed);
+    set_idle_output(idle_output);
+
+    configure_armed();
+}
+
+// configure - configure the RSC.
+void AP_MotorsHeli_RSC::configure_armed()
+{
+
+    // set desired speed for each control mode
+    switch(_control_mode) {
+    case ROTOR_CONTROL_MODE_PASSTHROUGH:
+        // passthrough mode uses the pilot's desired speed directly as the control output, so set the desired speed to the pilot's input
+        _desired_speed = _pilot_desired_speed;
+        break;
+    case ROTOR_CONTROL_MODE_SETPOINT:
+        _desired_speed = _rsc_setpoint.get() * 0.01f;
+        break;
+    case ROTOR_CONTROL_MODE_THROTTLECURVE:
+    case ROTOR_CONTROL_MODE_AUTOTHROTTLE:
+        // throttle curve and autothrottle both use the pilot's desired speed as the input to the throttle curve, so set the desired speed to the pilot's input
+        _desired_speed = 1.0f;
+        break;
+    default:
+        _desired_speed = 0.0f;
+        break;
+    }
+
+    // Set rsc mode specific parameters
+    if (_rsc_mode.get() == ROTOR_CONTROL_MODE_THROTTLECURVE || _rsc_mode.get() == ROTOR_CONTROL_MODE_AUTOTHROTTLE) {
+        set_throttle_curve();
+    }
+    // keeps user from changing RSC mode while armed
+    if (_rsc_mode.get() != get_control_mode()) {
+        reset_rsc_mode_param();
+        _save_rsc_mode = true;
+    }
+    // saves rsc mode parameter when disarmed if it had been reset while armed
+    if (_save_rsc_mode && _desired_spool_state != DesiredSpoolState::SHUT_DOWN) {
+        _rsc_mode.save();
+        _save_rsc_mode = false;
+    }
 
 }
 
@@ -249,11 +317,14 @@ void AP_MotorsHeli_RSC::set_throttle_curve()
     splinterp5(thrcrv,_thrcrv_poly);
 }
 
-// output - update value to send to ESC/Servo
-void AP_MotorsHeli_RSC::output(RotorControlState state)
+// update - ran each loop to update the RSC
+AP_MotorsHeli_RSC::SpoolState AP_MotorsHeli_RSC::update(DesiredSpoolState desired_spool_state)
 {
-    // Store rsc state for logging
-    _rsc_state = state;
+    // set desired spool state
+    _desired_spool_state = desired_spool_state;
+
+    configure_armed();
+
     // _rotor_RPM available to the RSC output
 #if AP_RPM_ENABLED
     const AP_RPM *rpm = AP_RPM::get_singleton();
@@ -282,8 +353,8 @@ void AP_MotorsHeli_RSC::output(RotorControlState state)
         _last_update_us = now;
     }
 
-    switch (state) {
-    case RotorControlState::STOP:
+    switch (desired_spool_state) {
+    case DesiredSpoolState::SHUT_DOWN:
         // set rotor ramp to decrease speed to zero, this happens instantly inside update_rotor_ramp()
         update_rotor_ramp(0.0f, dt);
 
@@ -305,10 +376,9 @@ void AP_MotorsHeli_RSC::output(RotorControlState state)
 
         // reset fast idle timer
         _fast_idle_timer = 0.0;
-
         break;
 
-    case RotorControlState::IDLE:
+    case DesiredSpoolState::GROUND_IDLE:
         // set rotor ramp to decrease speed to zero
         update_rotor_ramp(0.0f, dt);
 
@@ -347,9 +417,10 @@ void AP_MotorsHeli_RSC::output(RotorControlState state)
         }
 
         _control_output = _idle_throttle;
+
         break;
 
-    case RotorControlState::ACTIVE:
+    case DesiredSpoolState::THROTTLE_UNLIMITED:
         // set main rotor ramp to increase to full speed
         update_rotor_ramp(1.0f, dt);
 
@@ -381,15 +452,79 @@ void AP_MotorsHeli_RSC::output(RotorControlState state)
     // update rotor speed run-up estimate
     update_rotor_runup(dt);
 
+    update_spool_state(desired_spool_state);
+
     if (_power_slewrate > 0) {
         // implement slew rate for throttle
         float max_delta = dt * _power_slewrate * 0.01f;
         _control_output = constrain_float(_control_output, last_control_output-max_delta, last_control_output+max_delta);
     }
+    return _spool_state;
 
-    // output to rsc servo
-    write_rsc(_control_output);
 }
+
+
+void AP_MotorsHeli_RSC::update_spool_state(DesiredSpoolState _spool_desired)
+{
+    switch (_spool_state) {
+        case SpoolState::SHUT_DOWN:
+            // Motors should be stationary.
+            // make sure the motors are spooling in the correct direction
+            if (_spool_desired != DesiredSpoolState::SHUT_DOWN) {
+                _spool_state = SpoolState::GROUND_IDLE;
+                break;
+            }
+
+            break;
+
+        case SpoolState::GROUND_IDLE: {
+            // Motors should be stationary or at ground idle.
+            if (_spool_desired == DesiredSpoolState::SHUT_DOWN){
+                _spool_state = SpoolState::SHUT_DOWN;
+            } else if(_spool_desired == DesiredSpoolState::THROTTLE_UNLIMITED) {
+                _spool_state = SpoolState::SPOOLING_UP;
+            } else {    // _spool_desired == GROUND_IDLE
+
+            }
+
+            break;
+        }
+        case SpoolState::SPOOLING_UP:
+            // Maximum throttle should move from minimum to maximum.
+            // make sure the motors are spooling in the correct direction
+            if (_spool_desired != DesiredSpoolState::THROTTLE_UNLIMITED ){
+                _spool_state = SpoolState::SPOOLING_DOWN;
+                break;
+            }
+
+            if (_runup_complete){
+                _spool_state = SpoolState::THROTTLE_UNLIMITED;
+            }
+            break;
+
+        case SpoolState::THROTTLE_UNLIMITED:
+            // Throttle should exhibit normal flight behavior.
+            // make sure the motors are spooling in the correct direction
+            if (_spool_desired != DesiredSpoolState::THROTTLE_UNLIMITED && !rotor_speed_above_critical()) {
+                _spool_state = SpoolState::SPOOLING_DOWN;
+                break;
+            }
+
+            break;
+
+        case SpoolState::SPOOLING_DOWN:
+            // make sure the motors are spooling in the correct direction
+            if (_spool_desired == DesiredSpoolState::THROTTLE_UNLIMITED) {
+                _spool_state = SpoolState::SPOOLING_UP;
+                break;
+            }
+            if (_spooldown_complete){
+                _spool_state = SpoolState::GROUND_IDLE;
+            }
+            break;
+    }
+}
+
 
 // update_rotor_ramp - slews rotor output scalar between 0 and 1, outputs float scalar to _rotor_ramp_output
 void AP_MotorsHeli_RSC::update_rotor_ramp(float rotor_ramp_input, float dt)
@@ -623,7 +758,7 @@ void AP_MotorsHeli_RSC::write_log(void) const
                         _governor_output,
                         get_control_output(),
                         _rotor_ramp_output,
-                        uint8_t(_rsc_state));
+                        uint8_t(_desired_spool_state));
 }
 #endif
 
