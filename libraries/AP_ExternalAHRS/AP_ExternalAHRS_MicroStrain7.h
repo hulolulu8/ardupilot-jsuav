@@ -72,8 +72,6 @@ private:
     int8_t port_num;
     bool port_open = false;
 
-
-
     void build_packet();
 
     void post_imu() const;

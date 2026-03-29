@@ -126,5 +126,4 @@ bool AP_DDS_External_Control::convert_alt_frame(const uint8_t frame_in,  Locatio
     return true;
 }
 
-
 #endif // AP_DDS_ENABLED

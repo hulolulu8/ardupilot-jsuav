@@ -2,7 +2,6 @@
   external control library for copter
  */
 
-
 #include "AP_ExternalControl_Copter.h"
 #if AP_EXTERNAL_CONTROL_ENABLED
 

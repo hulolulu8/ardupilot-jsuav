@@ -421,4 +421,3 @@ void AP_GSOF::log_llh_msl() const
 #endif  // HAL_LOGGING_ENABLED
 
 #endif // AP_GSOF_ENABLED
-

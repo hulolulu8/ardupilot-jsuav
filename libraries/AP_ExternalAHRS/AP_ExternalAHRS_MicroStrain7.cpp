@@ -103,7 +103,6 @@ void AP_ExternalAHRS_MicroStrain7::check_initialise_state(void)
     }
 }
 
-
 // Builds packets by looking at each individual byte, once a full packet has been read in it checks the checksum then handles the packet.
 void AP_ExternalAHRS_MicroStrain7::build_packet()
 {
@@ -139,8 +138,6 @@ void AP_ExternalAHRS_MicroStrain7::build_packet()
         }
     }
 }
-
-
 
 // Posts data from an imu packet to `state` and `handle_external` methods
 void AP_ExternalAHRS_MicroStrain7::post_imu() const

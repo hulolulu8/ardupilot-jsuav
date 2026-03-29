@@ -248,7 +248,6 @@ bool AP_DDS_Client::update_topic(sensor_msgs_msg_NavSatFix& msg, const uint8_t i
     msg.status.service = 0; // SERVICE_GPS
     msg.status.status = -1; // STATUS_NO_FIX
 
-
     //! @todo What about glonass, compass, galileo?
     //! This will be properly designed and implemented to spec in #23277
     msg.status.service = 1; // SERVICE_GPS

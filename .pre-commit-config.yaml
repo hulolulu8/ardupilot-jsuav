@@ -41,6 +41,26 @@ repos:
         -   id: check-xml
         -   id: check-yaml
 
+  -   repo: https://github.com/igrr/astyle_py
+      rev: v1.1.0
+      hooks:
+      -   id: astyle_py
+          args:
+            - --astyle-version=3.4.7
+            - --options=Tools/CodeStyle/astylerc
+          files: |
+            (?x)^(
+              libraries\/AP_DDS\/.*\.(c|cpp|h|hpp)$ |
+              libraries\/AP_ExternalControl\/.*\.(c|cpp|h|hpp)$ |
+              libraries\/AP_GSOF\/.*\.(c|cpp|h|hpp)$ |
+              ArduCopter\/AP_ExternalControl_Copter.cpp$ |
+              ArduCopter\/AP_ExternalControl_Copter.h$ |
+              libraries\/AP_ExternalAHRS\/AP_ExternalAHRS_MicroStrain7.cpp$ |
+              libraries\/AP_ExternalAHRS\/AP_ExternalAHRS_MicroStrain7.h$ |
+              Rover\/AP_ExternalControl_Rover.cpp$ |
+              Rover\/AP_ExternalControl_Rover.h$ |
+            )$
+
   -   repo: https://github.com/psf/black
       rev: 25.1.0
       hooks:

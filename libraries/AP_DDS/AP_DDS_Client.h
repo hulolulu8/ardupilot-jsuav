@@ -318,7 +318,6 @@ private:
 
     static void dds_format_name(char* buf, const char* dds_prefix, uint8_t sysid, const char* name, bool use_sysid_ns);
 
-
 public:
     ~AP_DDS_Client();
 
@@ -418,5 +417,3 @@ public:
 };
 
 #endif // AP_DDS_ENABLED
-
-

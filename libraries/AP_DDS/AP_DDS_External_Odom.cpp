@@ -1,5 +1,4 @@
 
-
 #include "AP_DDS_External_Odom.h"
 #include "AP_DDS_Type_Conversions.h"
 

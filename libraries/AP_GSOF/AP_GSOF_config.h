@@ -6,4 +6,3 @@
 #ifndef AP_GSOF_ENABLED
 #define AP_GSOF_ENABLED 1
 #endif
-

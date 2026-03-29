@@ -2,7 +2,6 @@
   external control library for rover
  */
 
-
 #include "AP_ExternalControl_Rover.h"
 #if AP_EXTERNAL_CONTROL_ENABLED
 

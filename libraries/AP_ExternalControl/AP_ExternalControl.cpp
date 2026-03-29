@@ -20,7 +20,6 @@ AP_ExternalControl::AP_ExternalControl()
     singleton = this;
 }
 
-
 namespace AP
 {
 
