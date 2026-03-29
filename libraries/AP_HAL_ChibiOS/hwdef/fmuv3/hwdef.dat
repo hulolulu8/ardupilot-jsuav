@@ -465,3 +465,5 @@ define AP_BATTERY_SMBUS_SOLO_ENABLED (AP_BATTERY_SMBUS_ENABLED && BOARD_FLASH_SI
 
 # produce this error if we are on a 1M board
 define BOARD_CHECK_F427_USE_1M "ERROR: 1M flash use fmuv2"
+define BOARD_NAME "JS UAV VTOL FC"
+define AP_CUSTOM_FIRMWARE_STRING "JS UAV VTOL V1.0 (Wuhan JS UAV DRONE Co.,Ltd)"
