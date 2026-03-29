@@ -1,7 +1,6 @@
 #pragma once
 
 #include "AP_Motors_config.h"
-
 #include <AP_Common/AP_Common.h>
 #include <AP_Math/AP_Math.h>
 #include <Filter/Filter.h>         // filter library
@@ -167,27 +166,13 @@ public:
     bool                get_thrust_boost() const { return _thrust_boost; }
     virtual uint8_t     get_lost_motor() const { return 0; }
 
-    // desired spool states
-    enum class DesiredSpoolState : uint8_t {
-        SHUT_DOWN = 0,              // all motors should move to stop
-        GROUND_IDLE = 1,            // all motors should move to ground idle
-        THROTTLE_UNLIMITED = 2,     // motors should move to being a state where throttle is unconstrained (e.g. by start up procedure)
-    };
+    #include "AP_Motors_Spool.h"
 
     // set_desired_spool_state - apply safety constraints and set desired spool state
     // Pure virtual - each vehicle type must implement appropriate safety logic
     virtual void set_desired_spool_state(enum DesiredSpoolState spool) = 0;
 
     enum DesiredSpoolState get_desired_spool_state(void) const { return _spool_desired; }
-
-    // spool states
-    enum class SpoolState : uint8_t {
-        SHUT_DOWN = 0,                      // all motors stop
-        GROUND_IDLE = 1,                    // all motors at ground idle
-        SPOOLING_UP = 2,                       // increasing maximum throttle while stabilizing
-        THROTTLE_UNLIMITED = 3,             // throttle is no longer constrained by start up procedure
-        SPOOLING_DOWN = 4,                     // decreasing maximum throttle while stabilizing
-    };
 
     // get_spool_state - get current spool state
     enum SpoolState  get_spool_state(void) const { return _spool_state; }

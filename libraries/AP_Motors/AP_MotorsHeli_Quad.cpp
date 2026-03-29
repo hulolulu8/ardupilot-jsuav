@@ -117,12 +117,12 @@ void AP_MotorsHeli_Quad::calculate_roll_pitch_collective_factors()
 }
 
 // update_motor_controls - sends commands to motor controllers
-AP_Motors::SpoolState  AP_MotorsHeli_Quad::update_motor_control(AP_MotorsHeli_RSC::DesiredRSCSpoolState state)
+AP_Motors::SpoolState  AP_MotorsHeli_Quad::update_motor_control(AP_Motors::DesiredSpoolState state)
 {
     // Send state update to motors
-    AP_MotorsHeli_RSC::RSCSpoolState main_rotor_state = _main_rotor.update(state);
+    AP_Motors::SpoolState main_rotor_state = static_cast<AP_Motors::SpoolState>(_main_rotor.update(static_cast<AP_MotorsHeli_RSC::DesiredSpoolState>(state)));
 
-    if (state == AP_MotorsHeli_RSC::DesiredRSCSpoolState::SHUT_DOWN) {
+    if (state == AP_Motors::DesiredSpoolState::SHUT_DOWN) {
         // set engine run enable aux output to not run position to kill engine when disarmed
         SRV_Channels::set_output_limit(SRV_Channel::k_engine_run_enable, SRV_Channel::Limit::MIN);
     } else {
@@ -131,9 +131,9 @@ AP_Motors::SpoolState  AP_MotorsHeli_Quad::update_motor_control(AP_MotorsHeli_RS
     }
 
     // Check if rotors are run-up
-    set_rotor_runup_complete(main_rotor_state == AP_MotorsHeli_RSC::RSCSpoolState::THROTTLE_UNLIMITED);
+    set_rotor_runup_complete(main_rotor_state == AP_Motors::SpoolState::THROTTLE_UNLIMITED);
 
-    return convert_spool_state(main_rotor_state);
+    return main_rotor_state;
 
 }
 

@@ -32,22 +32,6 @@ public:
         AP_Param::setup_object_defaults(this, var_info);
     };
 
-    // desired spool states
-    enum class DesiredRSCSpoolState : uint8_t {
-        SHUT_DOWN = 0,              // all motors should move to stop
-        GROUND_IDLE = 1,            // all motors should move to ground idle
-        THROTTLE_UNLIMITED = 2,     // motors should move to being a state where throttle is unconstrained (e.g. by start up procedure)
-    };
-
-    // spool states
-    enum class RSCSpoolState : uint8_t {
-        SHUT_DOWN = 0,                      // all motors stop
-        GROUND_IDLE = 1,                    // all motors at ground idle
-        SPOOLING_UP = 2,                       // increasing maximum throttle while stabilizing
-        THROTTLE_UNLIMITED = 3,             // throttle is no longer constrained by start up procedure
-        SPOOLING_DOWN = 4,                     // decreasing maximum throttle while stabilizing
-    };
-
     // initialize - servo initialization and parameter setup on start-up
     void        initialize();
 
@@ -64,10 +48,12 @@ public:
     // configure - configures the parameters for the armed state, should be called on each update of control mode and on start-up after initialize() to setup parameters and scalars for the current control mode
     void        configure_armed();
 
-    // update - runs RSC logic and outputs to motors, returns current spool state for use in motor output logic
-    RSCSpoolState        update(DesiredRSCSpoolState desired_spool_state);
+    #include "AP_Motors_Spool.h"
 
-    void     update_spool_state(DesiredRSCSpoolState desired_spool_state);
+    // update - runs RSC logic and outputs to motors, returns current spool state for use in motor output logic
+    SpoolState        update(DesiredSpoolState desired_spool_state);
+
+    void     update_spool_state(DesiredSpoolState desired_spool_state);
 
 // output_to_servo - outputs pwm onto output rsc channel.
     void        output_to_servo() { write_rsc(_control_output);}
@@ -147,8 +133,8 @@ private:
     const SRV_Channel::Function _aux_fn;
     const uint8_t _default_channel;
 
-    RSCSpoolState          _spool_state;               // current spool state
-    DesiredRSCSpoolState   _desired_spool_state;
+    SpoolState          _spool_state;               // current spool state
+    DesiredSpoolState   _desired_spool_state;
 
 
     // internal variables

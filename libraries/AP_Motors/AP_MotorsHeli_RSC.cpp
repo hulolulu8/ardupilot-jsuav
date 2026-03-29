@@ -296,7 +296,7 @@ void AP_MotorsHeli_RSC::configure_armed()
         _save_rsc_mode = true;
     }
     // saves rsc mode parameter when disarmed if it had been reset while armed
-    if (_save_rsc_mode && _desired_spool_state != DesiredRSCSpoolState::SHUT_DOWN) {
+    if (_save_rsc_mode && _desired_spool_state != DesiredSpoolState::SHUT_DOWN) {
         _rsc_mode.save();
         _save_rsc_mode = false;
     }
@@ -318,7 +318,7 @@ void AP_MotorsHeli_RSC::set_throttle_curve()
 }
 
 // update - ran each loop to update the RSC
-AP_MotorsHeli_RSC::RSCSpoolState AP_MotorsHeli_RSC::update(DesiredRSCSpoolState desired_spool_state)
+AP_MotorsHeli_RSC::SpoolState AP_MotorsHeli_RSC::update(DesiredSpoolState desired_spool_state)
 {
     // set desired spool state
     _desired_spool_state = desired_spool_state;
@@ -354,7 +354,7 @@ AP_MotorsHeli_RSC::RSCSpoolState AP_MotorsHeli_RSC::update(DesiredRSCSpoolState 
     }
 
     switch (desired_spool_state) {
-    case DesiredRSCSpoolState::SHUT_DOWN:
+    case DesiredSpoolState::SHUT_DOWN:
         // set rotor ramp to decrease speed to zero, this happens instantly inside update_rotor_ramp()
         update_rotor_ramp(0.0f, dt);
 
@@ -378,7 +378,7 @@ AP_MotorsHeli_RSC::RSCSpoolState AP_MotorsHeli_RSC::update(DesiredRSCSpoolState 
         _fast_idle_timer = 0.0;
         break;
 
-    case DesiredRSCSpoolState::GROUND_IDLE:
+    case DesiredSpoolState::GROUND_IDLE:
         // set rotor ramp to decrease speed to zero
         update_rotor_ramp(0.0f, dt);
 
@@ -420,7 +420,7 @@ AP_MotorsHeli_RSC::RSCSpoolState AP_MotorsHeli_RSC::update(DesiredRSCSpoolState 
 
         break;
 
-    case DesiredRSCSpoolState::THROTTLE_UNLIMITED:
+    case DesiredSpoolState::THROTTLE_UNLIMITED:
         // set main rotor ramp to increase to full speed
         update_rotor_ramp(1.0f, dt);
 
@@ -464,62 +464,62 @@ AP_MotorsHeli_RSC::RSCSpoolState AP_MotorsHeli_RSC::update(DesiredRSCSpoolState 
 }
 
 
-void AP_MotorsHeli_RSC::update_spool_state(DesiredRSCSpoolState _spool_desired)
+void AP_MotorsHeli_RSC::update_spool_state(DesiredSpoolState _spool_desired)
 {
     switch (_spool_state) {
-        case RSCSpoolState::SHUT_DOWN:
+        case SpoolState::SHUT_DOWN:
             // Motors should be stationary.
             // make sure the motors are spooling in the correct direction
-            if (_spool_desired != DesiredRSCSpoolState::SHUT_DOWN) {
-                _spool_state = RSCSpoolState::GROUND_IDLE;
+            if (_spool_desired != DesiredSpoolState::SHUT_DOWN) {
+                _spool_state = SpoolState::GROUND_IDLE;
                 break;
             }
 
             break;
 
-        case RSCSpoolState::GROUND_IDLE: {
+        case SpoolState::GROUND_IDLE: {
             // Motors should be stationary or at ground idle.
-            if (_spool_desired == DesiredRSCSpoolState::SHUT_DOWN){
-                _spool_state = RSCSpoolState::SHUT_DOWN;
-            } else if(_spool_desired == DesiredRSCSpoolState::THROTTLE_UNLIMITED) {
-                _spool_state = RSCSpoolState::SPOOLING_UP;
+            if (_spool_desired == DesiredSpoolState::SHUT_DOWN){
+                _spool_state = SpoolState::SHUT_DOWN;
+            } else if(_spool_desired == DesiredSpoolState::THROTTLE_UNLIMITED) {
+                _spool_state = SpoolState::SPOOLING_UP;
             } else {    // _spool_desired == GROUND_IDLE
 
             }
 
             break;
         }
-        case RSCSpoolState::SPOOLING_UP:
+        case SpoolState::SPOOLING_UP:
             // Maximum throttle should move from minimum to maximum.
             // make sure the motors are spooling in the correct direction
-            if (_spool_desired != DesiredRSCSpoolState::THROTTLE_UNLIMITED ){
-                _spool_state = RSCSpoolState::SPOOLING_DOWN;
+            if (_spool_desired != DesiredSpoolState::THROTTLE_UNLIMITED ){
+                _spool_state = SpoolState::SPOOLING_DOWN;
                 break;
             }
 
             if (_runup_complete){
-                _spool_state = RSCSpoolState::THROTTLE_UNLIMITED;
+                _spool_state = SpoolState::THROTTLE_UNLIMITED;
             }
             break;
 
-        case RSCSpoolState::THROTTLE_UNLIMITED:
+        case SpoolState::THROTTLE_UNLIMITED:
             // Throttle should exhibit normal flight behavior.
             // make sure the motors are spooling in the correct direction
-            if (_spool_desired != DesiredRSCSpoolState::THROTTLE_UNLIMITED && !rotor_speed_above_critical()) {
-                _spool_state = RSCSpoolState::SPOOLING_DOWN;
+            if (_spool_desired != DesiredSpoolState::THROTTLE_UNLIMITED && !rotor_speed_above_critical()) {
+                _spool_state = SpoolState::SPOOLING_DOWN;
                 break;
             }
 
             break;
 
-        case RSCSpoolState::SPOOLING_DOWN:
+        case SpoolState::SPOOLING_DOWN:
             // make sure the motors are spooling in the correct direction
-            if (_spool_desired == DesiredRSCSpoolState::THROTTLE_UNLIMITED) {
-                _spool_state = RSCSpoolState::SPOOLING_UP;
+            if (_spool_desired == DesiredSpoolState::THROTTLE_UNLIMITED) {
+                _spool_state = SpoolState::SPOOLING_UP;
                 break;
             }
             if (_spooldown_complete){
-                _spool_state = RSCSpoolState::GROUND_IDLE;
+                _spool_state = SpoolState::GROUND_IDLE;
             }
             break;
     }
