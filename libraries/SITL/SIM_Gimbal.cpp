@@ -50,6 +50,7 @@ void Gimbal::update(const class Aircraft &aircraft)
     const Matrix3f &vehicle_dcm = aircraft.get_dcm();
     if (!init_done) {
         dcm = vehicle_dcm;
+        init_done = true;
     }
 
     const Vector3f &vehicle_gyro = AP::ins().get_gyro();
@@ -177,6 +178,7 @@ void Gimbal::get_deltas(Vector3f &_delta_angle, Vector3f &_delta_velocity, uint3
     delta_angle.zero();
     delta_velocity.zero();
     delta_start_us = now_us;
+
 }
 
 } // namespace SITL

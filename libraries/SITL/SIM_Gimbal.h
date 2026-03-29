@@ -36,13 +36,27 @@ public:
     }
 
     void get_deltas(Vector3f &_delta_angle, Vector3f &_delta_velocity, uint32_t &_delta_time_us);
-    void get_joint_angles(Vector3f &_angles) { _angles = joint_angles; }
+    void get_joint_angles(Vector3f &_angles) const {
+        _angles = joint_angles;
+    }
+
+    // copy the gimbal body-to-earth rotation matrix
+    void get_dcm(Matrix3f &out) const { out = dcm; }
+
+    // override the physical joint angle limits (roll, pitch, azimuth) in radians
+    void set_joint_limits(const Vector3f &lower_limits, const Vector3f &upper_limits) {
+        lower_joint_limits = lower_limits;
+        upper_joint_limits = upper_limits;
+    }
+
+    // force the gimbal body-to-earth rotation matrix to a specific value
+    void set_dcm(const Matrix3f &m) { dcm = m; init_done = true; }
 
 private:
 
     // rotation matrix (gimbal body -> earth)
     Matrix3f dcm;
-    bool init_done;
+    bool init_done = false;
 
     // time of last update
     uint32_t last_update_us;

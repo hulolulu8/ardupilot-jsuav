@@ -78,8 +78,14 @@ public:
     // primary and secondary sources use the AP_Camera::CameraSource enum cast to uint8_t
     bool set_camera_source(uint8_t primary_source, uint8_t secondary_source) override;
 
-    // send camera information message to GCS
-    void send_camera_information(mavlink_channel_t chan) const override;
+    // camera information getters
+    const char* get_camera_vendor_name() const override { return (_initialised && _fw_version.received) ? "Siyi" : nullptr; }
+    const char* get_camera_model_name() const override { return get_model_name(); }
+    uint32_t get_camera_firmware_version() const override {
+        return _fw_version.camera.major | (_fw_version.camera.minor << 8) | (_fw_version.camera.patch << 16);
+    }
+    float get_camera_focal_length_mm() const override;
+    uint32_t get_camera_cap_flags() const override;
 
     // send camera settings message to GCS
     void send_camera_settings(mavlink_channel_t chan) const override;
@@ -324,7 +330,7 @@ private:
     // buffer holding bytes from latest packet.  This is only used to calculate the crc
     uint8_t _msg_buff[AP_MOUNT_SIYI_PACKETLEN_MAX];
     uint8_t _msg_buff_len;
-    const uint8_t _msg_buff_data_start = 8;         // data starts at this byte of _msg_buff
+    static constexpr uint8_t _msg_buff_data_start = 8;         // data starts at this byte of _msg_buff
 
     // parser state and unpacked fields
     struct PACKED {

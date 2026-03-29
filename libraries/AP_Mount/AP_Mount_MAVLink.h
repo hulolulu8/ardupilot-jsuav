@@ -63,6 +63,11 @@ protected:
     // get attitude as a quaternion.  returns true on success
     bool get_attitude_quaternion(Quaternion& att_quat) override;
 
+    // camera information getters for CAMERA_INFORMATION message
+    const char* get_camera_vendor_name() const override { return _initialised ? vendor_name : nullptr; }
+    const char* get_camera_model_name() const override { return model_name; }
+    uint32_t get_camera_firmware_version() const override { return _firmware_version; }
+
 private:
 
     // returns true if the camera is reporting that it has the
@@ -102,6 +107,7 @@ private:
     uint8_t _compid;                // component id of gimbal
     mavlink_gimbal_device_attitude_status_t _gimbal_device_attitude_status;  // copy of most recently received gimbal status
     uint32_t _last_attitude_status_ms;  // system time last attitude status was received (used for health reporting)
+    uint32_t _firmware_version;         // firmware version from GIMBAL_DEVICE_INFORMATION
     char vendor_name[MAVLINK_MSG_GIMBAL_DEVICE_INFORMATION_FIELD_VENDOR_NAME_LEN];  // vendor name
     char model_name[MAVLINK_MSG_GIMBAL_DEVICE_INFORMATION_FIELD_MODEL_NAME_LEN];  // model name
     uint32_t device_capapability_flags;  // from GIMBAL_DEVICE_INFORMATION

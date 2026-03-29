@@ -85,8 +85,11 @@ public:
     bool set_camera_source(uint8_t primary_source, uint8_t secondary_source) override;
 #endif
 
-    // send camera information message to GCS
-    void send_camera_information(mavlink_channel_t chan) const override;
+    // camera information getters
+    const char* get_camera_vendor_name() const override { return _initialised ? "Topotek" : nullptr; }
+    const char* get_camera_model_name() const override { return _got_gimbal_model_name ? _model_name : ""; }
+    uint32_t get_camera_firmware_version() const override { return _firmware_ver; }
+    uint32_t get_camera_cap_flags() const override;
 
     // send camera settings message to GCS
     void send_camera_settings(mavlink_channel_t chan) const override;
@@ -254,7 +257,7 @@ private:
     bool _got_gimbal_model_name;                                // true if gimbal's model name has been received
     bool _last_zoom_stop;                                       // true if zoom has been stopped (used to re-send in order to handle lost packets)
     bool _last_focus_stop;                                      // true if focus has been stopped (used to re-sent in order to handle lost packets)
-    uint8_t _model_name[16];                                    // gimbal model name
+    char _model_name[16];                                       // gimbal model name, always null-terminated
     uint8_t _sent_time_count;                                   // count of current time messages sent to gimbal
     uint32_t _firmware_ver;                                     // firmware version
     Vector3f _current_angle_rad;                                // current angles in radians received from gimbal (x=roll, y=pitch, z=yaw)

@@ -81,8 +81,12 @@ public:
     // primary and secondary sources use the AP_Camera::CameraSource enum cast to uint8_t
     bool set_camera_source(uint8_t primary_source, uint8_t secondary_source) override;
 
-    // send camera information message to GCS
-    void send_camera_information(mavlink_channel_t chan) const override;
+    // camera information getters
+    const char* get_camera_vendor_name() const override { return _initialised ? "Viewpro" : nullptr; }
+    const char* get_camera_model_name() const override { return _got_model_name ? _model_name : ""; }
+    uint32_t get_camera_firmware_version() const override { return _firmware_version; }
+    uint8_t get_camera_lens_id() const override { return (uint8_t)_image_sensor; }
+    uint32_t get_camera_cap_flags() const override;
 
     // send camera settings message to GCS
     void send_camera_settings(mavlink_channel_t chan) const override;
@@ -384,7 +388,7 @@ private:
     // internal variables
     uint8_t _msg_buff[AP_MOUNT_VIEWPRO_PACKETLEN_MAX];  // buffer holding latest bytes from gimbal
     uint8_t _msg_buff_len;                          // number of bytes held in msg buff
-    const uint8_t _msg_buff_data_start = 2;         // data starts at this byte of _msg_buff
+    static constexpr uint8_t _msg_buff_data_start = 2;         // data starts at this byte of _msg_buff
 
     // parser state and unpacked fields
     struct {
@@ -407,7 +411,7 @@ private:
     float _zoom_times;                              // zoom times received from gimbal
     uint32_t _firmware_version;                     // firmware version from gimbal
     bool _got_firmware_version;                     // true once we have received the firmware version
-    uint8_t _model_name[11] {};                     // model name received from gimbal
+    char _model_name[11] {};                        // model name received from gimbal, always null-terminated
     bool _got_model_name;                           // true once we have received model name
     float _rangefinder_dist_m;                      // latest rangefinder distance (in meters)
 };

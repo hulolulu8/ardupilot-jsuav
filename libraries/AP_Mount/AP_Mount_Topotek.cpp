@@ -446,47 +446,15 @@ bool AP_Mount_Topotek::set_camera_source(uint8_t primary_source, uint8_t seconda
 #endif  // HAL_MOUNT_SET_CAMERA_SOURCE_ENABLED
 
 // send camera information message to GCS
-void AP_Mount_Topotek::send_camera_information(mavlink_channel_t chan) const
+// return camera capability flags
+uint32_t AP_Mount_Topotek::get_camera_cap_flags() const
 {
-    // exit immediately if not initialised
-    if (!_initialised) {
-        return;
-    }
-
-    static const uint8_t vendor_name[32] = "Topotek";
-    static uint8_t model_name[32] {};
-    const char cam_definition_uri[140] {};
-
-    // copy model name if available
-    if (_got_gimbal_model_name) {
-        strncpy((char*)model_name, (const char*)_model_name, ARRAY_SIZE(model_name));
-    }
-
-    // capability flags
-    const uint32_t flags = CAMERA_CAP_FLAGS_CAPTURE_VIDEO |
-                           CAMERA_CAP_FLAGS_CAPTURE_IMAGE |
-                           CAMERA_CAP_FLAGS_HAS_BASIC_ZOOM |
-                           CAMERA_CAP_FLAGS_HAS_BASIC_FOCUS |
-                           CAMERA_CAP_FLAGS_HAS_TRACKING_POINT |
-                           CAMERA_CAP_FLAGS_HAS_TRACKING_RECTANGLE;
-
-    // send CAMERA_INFORMATION message
-    mavlink_msg_camera_information_send(
-        chan,
-        AP_HAL::millis(),       // time_boot_ms
-        vendor_name,            // vendor_name uint8_t[32]
-        model_name,             // model_name uint8_t[32]
-        _firmware_ver,          // firmware version uint32_t
-        0,                      // focal_length float (mm)
-        NaNf,                   // sensor_size_h float (mm)
-        NaNf,                   // sensor_size_v float (mm)
-        0,                      // resolution_h uint16_t (pix)
-        0,                      // resolution_v uint16_t (pix)
-        0,                      // lens_id uint8_t
-        flags,                  // flags uint32_t (CAMERA_CAP_FLAGS)
-        0,                      // cam_definition_version uint16_t
-        cam_definition_uri,     // cam_definition_uri char[140]
-        _instance + 1);         // gimbal_device_id uint8_t
+    return CAMERA_CAP_FLAGS_CAPTURE_VIDEO |
+           CAMERA_CAP_FLAGS_CAPTURE_IMAGE |
+           CAMERA_CAP_FLAGS_HAS_BASIC_ZOOM |
+           CAMERA_CAP_FLAGS_HAS_BASIC_FOCUS |
+           CAMERA_CAP_FLAGS_HAS_TRACKING_POINT |
+           CAMERA_CAP_FLAGS_HAS_TRACKING_RECTANGLE;
 }
 
 // send camera settings message to GCS
@@ -756,7 +724,8 @@ void AP_Mount_Topotek::send_target_angles(const MountAngleTarget& angle_rad)
 
     // send pitch target
     // sample command: #tpUG6wGIP
-    const uint16_t pitch_angle_cd = (uint16_t)constrain_int16(-degrees(angle_rad.pitch) * 100, -9000, 9000);
+    const float pitch_rad_clamped = constrain_float(angle_rad.pitch, radians(_params.pitch_angle_min), radians(_params.pitch_angle_max));
+    const uint16_t pitch_angle_cd = (uint16_t)constrain_int16(-degrees(pitch_rad_clamped) * 100, -9000, 9000);
     hal.util->snprintf((char *)databuff, ARRAY_SIZE(databuff), format_str, pitch_angle_cd, speed);
     send_variablelen_packet(HeaderType::VARIABLE_LEN,
                             AddressByte::GIMBAL,
@@ -991,7 +960,13 @@ void AP_Mount_Topotek::gimbal_version_analyse()
 
     // extract firmware version
     // the version can be in the format "1.2.3" or "123"
+    // _msg_buff[5] holds the ASCII hex-encoded data length byte from the packet header;
+    // char_to_hex returns 255 for an invalid (non-hex) character, which we treat as a
+    // malformed packet rather than capping, since a valid length field is always a hex digit
     const uint8_t data_buf_len = char_to_hex(_msg_buff[5]);
+    if (data_buf_len == 255) {
+        return;
+    }
 
     // check for "."
     bool contains_period = false;
@@ -1040,7 +1015,7 @@ void AP_Mount_Topotek::gimbal_version_analyse()
 // gimbal model name message analysis
 void AP_Mount_Topotek::gimbal_model_name_analyse()
 {
-    strncpy((char *)_model_name, (const char *)_msg_buff + 10, char_to_hex(_msg_buff[5]));
+    strncpy(_model_name, (const char *)_msg_buff + 10, MIN(char_to_hex(_msg_buff[5]), sizeof(_model_name)-1));
 
     // display gimbal model name to user
     GCS_SEND_TEXT(MAV_SEVERITY_INFO, "%s %s", send_message_prefix, _model_name);
