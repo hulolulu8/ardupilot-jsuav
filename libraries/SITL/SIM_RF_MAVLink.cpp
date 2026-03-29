@@ -17,6 +17,7 @@
 */
 
 #include "SIM_RF_MAVLink.h"
+#include <AP_Math/rotations.h>
 
 #include <GCS_MAVLink/GCS.h>
 
@@ -38,7 +39,7 @@ uint32_t RF_MAVLink::packet_for_alt(float alt_m, uint8_t *buffer, uint8_t buflen
         .current_distance = alt_cm,
         .type = 0,
         .id = 72, // ID
-        .orientation = MAV_SENSOR_ROTATION_PITCH_270,
+        .orientation = ROTATION_PITCH_270,
         .covariance = 255, // 255 is unknown covariance
         .horizontal_fov = 0, // 0 is unknown horizontal fov
         .vertical_fov = 0, // 0 is unknown vertical fov
