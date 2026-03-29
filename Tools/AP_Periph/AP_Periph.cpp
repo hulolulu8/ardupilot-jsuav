@@ -434,12 +434,22 @@ void AP_Periph_FW::update()
         }
 #endif
 #if 0
-#if AP_PERIPH_GPS_ENABLED
-        hal.serial(0)->printf("GPS status: %u\n", (unsigned)gps.status());
-#endif
 #if AP_PERIPH_MAG_ENABLED
-        const Vector3f &field = compass.get_field();
-        hal.serial(0)->printf("MAG (%d,%d,%d)\n", int(field.x), int(field.y), int(field.z));
+        printf("MAG c=%u a=%d h=%d\n", compass.get_count(), (int)compass.available(), (int)compass.healthy());
+        if (compass.get_count() > 0) {
+            const Vector3f &field = compass.get_field();
+            printf("MAG (%d,%d,%d)\n", int(field.x), int(field.y), int(field.z));
+        }
+#endif
+#if AP_PERIPH_IMU_ENABLED
+        if (imu.get_accel_count() > 0) {
+            const Vector3f &acc = imu.get_accel();
+            const Vector3f &gyr = imu.get_gyro();
+            printf("IMU A=(%d,%d,%d) G=(%d,%d,%d) h=%d\n",
+                   int(acc.x*100), int(acc.y*100), int(acc.z*100),
+                   int(gyr.x*100), int(gyr.y*100), int(gyr.z*100),
+                   (int)imu.healthy());
+        }
 #endif
 #if AP_PERIPH_BARO_ENABLED
         hal.serial(0)->printf("BARO H=%u P=%.2f T=%.2f\n", baro.healthy(), baro.get_pressure(), baro.get_temperature());

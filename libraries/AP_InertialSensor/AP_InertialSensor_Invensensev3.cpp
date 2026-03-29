@@ -141,6 +141,7 @@ extern const AP_HAL::HAL& hal;
 #define INV3_ID_IIM42652      0x6f
 #define INV3_ID_IIM42653      0x56
 #define INV3_ID_ICM42670      0x67
+#define INV3_ID_ICM45605      0xE5
 #define INV3_ID_ICM45686      0xE9
 
 // enable logging at FIFO rate for debugging
@@ -1031,6 +1032,7 @@ bool AP_InertialSensor_Invensensev3::check_whoami(void)
     // check 456 who am i
     whoami = register_read(INV3REG_456_WHOAMI);
     switch (whoami) {
+    case INV3_ID_ICM45605:
     case INV3_ID_ICM45686:
         inv3_type = Invensensev3_Type::ICM45686;
         return true;

@@ -51,7 +51,7 @@
 
 #define RM3100_BIST_REG       0x33
 #define RM3100_STATUS_REG     0x34
-#define RM3100_HSHAKE_REG     0x34
+#define RM3100_HSHAKE_REG     0x35
 #define RM3100_REVID_REG      0x36
 
 #define CCP0    0xC8      // Cycle Count values
@@ -63,7 +63,7 @@
 #define GAIN_CC200 75.0f
 
 #define TMRC    0x94    // Update rate 150Hz
-#define CMM     0x71    // read 3 axes and set data ready if 3 axes are ready
+#define CMM     0x79    // CMM all axes + DRDM=10 (DRDY after full measurement per manual Section 5.7.2)
 
 extern const AP_HAL::HAL &hal;
 
@@ -125,16 +125,18 @@ bool AP_Compass_RM3100::init()
         return false;
     }
 
-    dev->setup_checked_registers(8);
+    dev->setup_checked_registers(6);
 
-    dev->write_register(RM3100_TMRC_REG, TMRC, true); // CMM data rate
-    dev->write_register(RM3100_CMM_REG, CMM, true); // CMM configuration
+    // init order per manual: cycle counts first, then TMRC, then CMM last
     dev->write_register(RM3100_CCX1_REG, CCP1, true); // cycle count x
-    dev->write_register(RM3100_CCX0_REG, CCP0, true); // cycle count x
+    dev->write_register(RM3100_CCX0_REG, CCP0, true);
     dev->write_register(RM3100_CCY1_REG, CCP1, true); // cycle count y
-    dev->write_register(RM3100_CCY0_REG, CCP0, true); // cycle count y
+    dev->write_register(RM3100_CCY0_REG, CCP0, true);
     dev->write_register(RM3100_CCZ1_REG, CCP1, true); // cycle count z
-    dev->write_register(RM3100_CCZ0_REG, CCP0, true); // cycle count z
+    dev->write_register(RM3100_CCZ0_REG, CCP0, true);
+
+    dev->write_register(RM3100_TMRC_REG, TMRC); // CMM data rate — not checked (writing TMRC kills CMM)
+    dev->write_register(RM3100_CMM_REG, CMM);   // start CMM last — not checked (reading CMM kills CMM)
 
     _scaler = (1 / GAIN_CC200) * UTESLA_TO_MGAUSS; // has to be changed if using a different cycle count
 
@@ -166,6 +168,7 @@ bool AP_Compass_RM3100::init()
 
 void AP_Compass_RM3100::timer()
 {
+
     struct PACKED {
         uint8_t magx_2;
         uint8_t magx_1;
